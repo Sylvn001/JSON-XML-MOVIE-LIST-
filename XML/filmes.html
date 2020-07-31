@@ -1,0 +1,128 @@
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <title> catálogo de filmes</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <script src="xmltojson.js"></script>
+        <script>
+            //gambiarra do juninh
+            z=0
+            function getFilmes(){
+                let xmlHttp = new XMLHttpRequest()
+                xmlHttp.open('GET', 'http://localhost/Ajax_XML_MOVIES_LIST/XML/filmes.xml')
+                
+                xmlHttp.onreadystatechange = () => {
+                    if(xmlHttp.readyState == 4 && xmlHttp.status == 200 && z ==0)
+                    {
+                        z=1
+                        //isso tudo é para literalmente não listar duas vezes
+                        let xmlFilmes =xmlHttp.responseText
+                        console.log(xmlFilmes)
+
+                        let parser = new DOMParser()
+                        domFilmes = parser.parseFromString(xmlFilmes , 'text/xml')
+                        jsonFilmes = xmlToJson(domFilmes)
+                        console.log(jsonFilmes)
+
+                                    /*
+                        <div class="row">
+                            <div class="col">
+                                <p><strong>Titulo: </strong>Titulo do filme</p>
+                                <p><strong>Resumo: </strong>Resumo do filme</p>
+                                <p><strong>Gênero: </strong>Gênero do filme</p>
+                                <p><strong>Elenco: </strong>Elenco do filme</p>
+                                <p><strong>Data de lançamento: </strong>Data de lançamento do filme</p>
+                                <p><strong>Título: </strong>Titulo do filme</p>
+                                <hr>
+                            </div>
+                        </div>
+                        */
+                       for ( let i in jsonFilmes['filmes']['filme'] ){
+                           //console.log(jsonFilmes['filmes']['filme'][i])
+                           let item = jsonFilmes['filmes']['filme'][i]
+
+                           let divRow = document.createElement('div')
+                           divRow.className = 'row'
+
+                           let divCol  = document.createElement('div')
+                           divCol.className = 'col'
+
+                           let p1 = document.createElement('p')
+                           p1.innerHTML = '<strong>Titulo: </strong>' + item['titulo']['#text']
+
+                           let p2 = document.createElement('p')
+                           p2.innerHTML = '<strong>Resumo: </strong>' + item['resumo']['#text']
+
+                           let p3 = document.createElement('p')
+
+                           let genre = ''
+                           for(let g in item.genero){
+                               if(genre)
+                                   genre += ', '
+                               
+                                genre += item.genero[g]['#text']
+                           }
+                           p3.innerHTML = '<strong>Gênero:</strong> </strong>' + genre
+                           let cast = ''
+                           for(let c in item.elenco.ator){
+                               if(cast)
+                                   cast += ', '
+                               
+                                cast += item.elenco.ator[c]['#text']
+                           }
+                           let p4 = document.createElement('p')
+                           p4.innerHTML = '<strong>Elenco: </strong>' + cast 
+
+                           let p5 = document.createElement('p')
+                           p5.innerHTML = '<strong>Data de lançamento: </strong>' + item.dataLancamento['#text'] + ' (' + item.dataLancamento['@attributes']['pais'] + ')'
+                           let hr =  document.createElement('hr')
+
+                            divRow.appendChild(divCol)
+                            divCol.appendChild(p1)
+                            divCol.appendChild(p2)
+                            divCol.appendChild(p3)
+                            divCol.appendChild(p4)
+                            divCol.appendChild(p5)
+                            divCol.appendChild(hr)
+
+                            document.getElementById('list').appendChild(divRow)
+                       }
+                    }
+                    
+                    if(xmlHttp.readyState == 4 && xmlHttp.status == 404)
+                    {
+                        let erro = document.createElement('p')
+                        erro.className = 'text-danger'
+                        erro.innerHTML = 'Erro, não foi possivel encontrar o arquivo XML'
+                        document.getElementById('list').appendChild(erro)
+                    }
+                }
+
+                xmlHttp.send()
+
+            }
+      
+
+        </script>
+    </head>
+    <body>
+        <nav class="navbar navbar-light bg-light mb-4">
+            <div class="container">
+                <div class="navbar-brand mb-0 h1">
+                    <h3>Catálogo de filmes</h3>
+
+                </div>    
+            </div>
+        </nav>
+
+        <div class="container" id="list">
+            <div class="row mb-5">
+                <div class="col">
+                    <button class="btn btn-primary" type="button" onclick="getFilmes()">Listar Filmes</button>
+                </div>
+            </div>
+
+
+        </div>
+    </body>
+</html>
